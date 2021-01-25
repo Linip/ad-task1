@@ -32,10 +32,7 @@ class PhoneFixer
     public function fix($countryCode, $phoneNumber)
     {
         if (!isset($this->rules[$countryCode]))
-            return [
-                'isValid' => false,
-                'message' => 'Кода страны нет в справочнике'
-            ];
+            return $this->fail('Кода страны нет в справочнике');
 
         $rule = $this->rules[$countryCode];
 
@@ -50,21 +47,25 @@ class PhoneFixer
 
         $numberIsTooLong = strlen($withoutCode) > $rule['maxNumbers'];
         if ($numberIsTooLong)
-            return [
-                'isValid' => false,
-                'message' => 'Номер слишком длинный'
-            ];
+            return $this->fail('Номер слишком длинный');
 
         $numberIsTooShort = strlen($withoutCode) < $rule['minNumbers'];
         if ($numberIsTooShort)
-            return [
-                'isValid' => false,
-                'message' => 'Номер слишком короткий'
-            ];
+            $this->fail('Номер слишком короткий');
 
+        return $this->success($clearCode.$withoutCode);
+    }
+
+    protected function success($phoneNumber) {
         return [
             'isValid' => true,
-            'phoneNumber' => (int) ($clearCode.$withoutCode)
+            'phoneNumber' => (int) $phoneNumber
+        ];
+    }
+    protected function fail($message) {
+        return [
+            'isValid' => false,
+            'message' => $message
         ];
     }
 }
